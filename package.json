@@ -1,19 +1,23 @@
 {
   "name": "scout",
   "module": "index.ts",
-  "type": "module",
   "scripts": {
-    "dev": "bun index.ts --watch",
-    "build": "bun index.ts"
+    "build": "tsc",
+    "dev": "node --env-file=.env --watch -r ts-node/register index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
     "bun-types": "latest"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.5.4"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.11.1",
-    "@grpc/proto-loader": "^0.7.13"
+    "@grpc/proto-loader": "^0.7.13",
+    "@supabase/supabase-js": "^2.45.2",
+    "@tsconfig/node-lts-strictest-esm": "^18.12.1",
+    "@types/node": "^22.5.0",
+    "ts-node": "^10.9.2"
   }
 }
