@@ -234,11 +234,6 @@ export const validateBrokenObjectPropertyLevelAuthorization = async (
     const params = populateData(ruleConfig.params, "", tokens, users);
     const body = populateData(ruleConfig.body, "", tokens, users);
 
-    console.log("headers", headers);
-    console.log("params", params);
-    console.log("body", body);
-    console.log("url", url);
-
     const response = await axios.request({
       method: api.method.toLowerCase(),
       url,
@@ -357,12 +352,37 @@ export const validateUnrestrictedResourceConsumption = async (
     const params = populateData(successRuleConfig.params, "", tokens, users);
     const body = populateData(successRuleConfig.body, "", tokens, users);
 
-    // TODO: Validate req size
+    // Validate req size by adding dummy limit + 1 bytes
+    const payloadLimit = ruleConfig.limits.payload;
+    const time = Date.now();
+    const excessPayload = {
+      ...(body || {}),
+      [`dummy_${time}`]: "a".repeat(payloadLimit + 1),
+    };
+    const responseExcessPayload = await axios.request({
+      method: api.method.toLowerCase(),
+      url,
+      headers: {
+        ...(headers || {}),
+      },
+      params,
+      data: excessPayload,
+      validateStatus: () => true,
+    });
+
+    // It should have status 413
+    if (responseExcessPayload.status !== 413) {
+      return {
+        success: false,
+        message: "Payload limit not enforced",
+        severity: "HIGH",
+      };
+    }
 
     // Validate rate limit by sending limit + 1 requests at once
     const rateLimit = ruleConfig.limits.rate;
 
-    const responses = await Promise.all(
+    const responsesRateLimit = await Promise.all(
       Array.from({ length: rateLimit + 1 }).map(() =>
         axios.request({
           method: api.method.toLowerCase(),
@@ -376,7 +396,9 @@ export const validateUnrestrictedResourceConsumption = async (
     );
 
     // It should have at least one response with status 429
-    const rateLimitResponse = responses.find((res) => res.status === 429);
+    const rateLimitResponse = responsesRateLimit.find(
+      (res) => res.status === 429
+    );
 
     if (!rateLimitResponse) {
       return {
