@@ -123,7 +123,9 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
         app,
         api,
         brokenAuthentication.rules,
-        successFlow?.rules
+        successFlow?.rules,
+        tokens,
+        users
       );
 
       outputs.push({

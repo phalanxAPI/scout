@@ -117,14 +117,26 @@ export const validateBrokenAuthentication = async (
   app: ApplicationDoc,
   api: APIDoc,
   ruleConfig: SecurityConfigurationDoc["rules"],
-  successRuleConfig: SecurityConfigurationDoc["rules"]
+  successRuleConfig: SecurityConfigurationDoc["rules"],
+  tokens: Record<string, string>,
+  users: Record<string, any>
 ): Promise<ScanResult> => {
   try {
+    const emptyTokens = Object.keys(tokens).reduce((acc, key) => {
+      acc[key] = "";
+      return acc;
+    }, {} as Record<string, string>);
     const url = app.baseUrl + api.endpoint;
+    const headers = populateData(ruleConfig.headers, "", emptyTokens, users);
+    const params = populateData(ruleConfig.params, "", emptyTokens, users);
+    const body = populateData(ruleConfig.body, "", emptyTokens, users);
 
     const response = await axios.request({
       method: api.method.toLowerCase(),
       url,
+      headers,
+      params,
+      data: body,
       validateStatus: () => true,
     });
 
@@ -147,6 +159,51 @@ export const validateBrokenAuthentication = async (
         return {
           success: false,
           message: `Expected status code ${expectedCode}, got ${responseCode}`,
+          severity: "LOW",
+        };
+      }
+    }
+
+    // try with dummy token
+    const dummyTokens = Object.keys(tokens).reduce((acc, key) => {
+      acc[key] = Math.random().toString(36).substring(2);
+      return acc;
+    }, {} as Record<string, string>);
+
+    const dummyHeaders = populateData(
+      ruleConfig.headers,
+      "",
+      dummyTokens,
+      users
+    );
+    const dummyParams = populateData(ruleConfig.params, "", dummyTokens, users);
+    const dummyBody = populateData(ruleConfig.body, "", dummyTokens, users);
+
+    const dummyResponse = await axios.request({
+      method: api.method.toLowerCase(),
+      url,
+      headers: dummyHeaders,
+      params: dummyParams,
+      data: dummyBody,
+      validateStatus: () => true,
+    });
+
+    const dummyResponseCode = dummyResponse.status;
+
+    if (dummyResponseCode !== expectedCode) {
+      if (
+        dummyResponseCode === expectedSuccessCode ||
+        Math.floor(dummyResponseCode / 100) === 2
+      ) {
+        return {
+          success: false,
+          message: `Expected status code ${expectedCode}, got ${dummyResponseCode}`,
+          severity: "HIGH",
+        };
+      } else {
+        return {
+          success: false,
+          message: `Expected status code ${expectedCode}, got ${dummyResponseCode}`,
           severity: "LOW",
         };
       }
