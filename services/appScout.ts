@@ -4,6 +4,8 @@ import Application from "../arsenal/models/application";
 import Scan from "../arsenal/models/scan";
 import { ScanAppRequest, ScanAppResponse } from "../types/proto";
 import { scoutAPI } from "./apiScout";
+import SecurityConfiguration from "../arsenal/models/security-conf";
+import { SecurityConfigType } from "../arsenal/types/security-conf";
 
 export const scoutApp = async (
   data: ScanAppRequest
@@ -17,10 +19,59 @@ export const scoutApp = async (
       throw new Error("Application not found");
     }
 
+    // const apiData = await API.create({
+    //   appId,
+    //   endpoint: "/api/v1/test",
+    //   method: "PUT",
+    //   isVerified: true,
+    //   isDeprecated: false,
+    // });
+
+    // await SecurityConfiguration.create({
+    //   apiId: apiData,
+    //   configType: SecurityConfigType.SUCCESS_FLOW,
+    //   isEnabled: true,
+    //   rules: {
+    //     headers: {
+    //       Authorization: `Bearer {{admin.token}}`,
+    //     },
+    //     body: {
+    //       id: "admin",
+    //       firstName: "Admin",
+    //       lastName: "User",
+    //       isAdmin: true,
+    //     },
+    //     expectations: {
+    //       code: 200,
+    //     },
+    //   },
+    // });
+
+    // await SecurityConfiguration.create({
+    //   apiId: apiData,
+    //   configType: SecurityConfigType.BROKEN_OBJECT_PROPERTY_LEVEL_AUTHORIZATION,
+    //   isEnabled: true,
+    //   rules: {
+    //     headers: {
+    //       Authorization: `Bearer {{user1.token}}`,
+    //     },
+    //     body: {
+    //       id: "user1",
+    //       firstName: "User",
+    //       lastName: "One",
+    //       isAdmin: true,
+    //     },
+    //     expectations: {
+    //       code: 403,
+    //     },
+    //   },
+    // });
+
     const apis = await API.find({ appId });
 
     let outputSummary = `## Scanned APIs: \n\n`;
     outputSummary += apis
+      .filter((item) => item.isVerified)
       .map((api) => `- \`${api._id}\` => ${api.method}${api.endpoint}`)
       .join("\n");
 

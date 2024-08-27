@@ -7,6 +7,7 @@ import { fetchUsersData } from "./users";
 import {
   ScanResult,
   validateBrokenAuthentication,
+  validateBrokenObjectPropertyLevelAuthorization,
   validateObjectLevelAuth,
   validateSuccessCase,
 } from "./validations";
@@ -98,7 +99,7 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
     }
 
     const brokenObjectLevelAuth =
-      typeWiseMap[SecurityConfigType.BROKEN_OBJECT_LEVEL_AUTH];
+      typeWiseMap[SecurityConfigType.BROKEN_OBJECT_LEVEL_AUTHORIZATION];
     if (brokenObjectLevelAuth) {
       const brokenObjectLevelAuthValidation = await validateObjectLevelAuth(
         app,
@@ -110,7 +111,7 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
       );
 
       outputs.push({
-        type: SecurityConfigType.BROKEN_OBJECT_LEVEL_AUTH,
+        type: SecurityConfigType.BROKEN_OBJECT_LEVEL_AUTHORIZATION,
         result: brokenObjectLevelAuthValidation,
       });
     }
@@ -128,6 +129,27 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
       outputs.push({
         type: SecurityConfigType.BROKEN_AUTHENTICATION,
         result: brokenAuthenticationValidation,
+      });
+    }
+
+    const brokenObjectPropertyLevelAuth =
+      typeWiseMap[
+        SecurityConfigType.BROKEN_OBJECT_PROPERTY_LEVEL_AUTHORIZATION
+      ];
+    if (brokenObjectPropertyLevelAuth) {
+      const brokenObjectPropertyLevelAuthValidation =
+        await validateBrokenObjectPropertyLevelAuthorization(
+          app,
+          api,
+          brokenObjectPropertyLevelAuth.rules,
+          successFlow?.rules,
+          tokens,
+          users
+        );
+
+      outputs.push({
+        type: SecurityConfigType.BROKEN_OBJECT_PROPERTY_LEVEL_AUTHORIZATION,
+        result: brokenObjectPropertyLevelAuthValidation,
       });
     }
 
