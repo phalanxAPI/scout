@@ -342,3 +342,59 @@ export const validateBrokenFunctionLevelAuthorization = async (
     throw new Error("Failed to validate broken function level auth case");
   }
 };
+
+export const validateUnrestrictedResourceConsumption = async (
+  app: ApplicationDoc,
+  api: APIDoc,
+  ruleConfig: SecurityConfigurationDoc["rules"],
+  successRuleConfig: SecurityConfigurationDoc["rules"],
+  tokens: Record<string, string>,
+  users: Record<string, any>
+): Promise<ScanResult> => {
+  try {
+    const url = app.baseUrl + api.endpoint;
+    const headers = populateData(successRuleConfig.headers, "", tokens, users);
+    const params = populateData(successRuleConfig.params, "", tokens, users);
+    const body = populateData(successRuleConfig.body, "", tokens, users);
+
+    // TODO: Validate req size
+
+    // Validate rate limit by sending limit + 1 requests at once
+    const rateLimit = ruleConfig.limits.rate;
+
+    const responses = await Promise.all(
+      Array.from({ length: rateLimit + 1 }).map(() =>
+        axios.request({
+          method: api.method.toLowerCase(),
+          url,
+          headers,
+          params,
+          data: body,
+          validateStatus: () => true,
+        })
+      )
+    );
+
+    // It should have at least one response with status 429
+    const rateLimitResponse = responses.find((res) => res.status === 429);
+
+    if (!rateLimitResponse) {
+      return {
+        success: false,
+        message: "Rate limit not enforced",
+        severity: "HIGH",
+      };
+    }
+
+    return {
+      success: true,
+      message: "Case validated successfully",
+    };
+  } catch (err) {
+    console.error(err);
+
+    throw new Error(
+      "Failed to validate unrestricted resource consumption case"
+    );
+  }
+};

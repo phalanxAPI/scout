@@ -7,9 +7,11 @@ import { fetchUsersData } from "./users";
 import {
   ScanResult,
   validateBrokenAuthentication,
+  validateBrokenFunctionLevelAuthorization,
   validateBrokenObjectPropertyLevelAuthorization,
   validateObjectLevelAuth,
   validateSuccessCase,
+  validateUnrestrictedResourceConsumption,
 } from "./validations";
 
 export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
@@ -158,17 +160,38 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
     const brokenFunctionLevelAuth =
       typeWiseMap[SecurityConfigType.BROKEN_FUNCTION_LEVEL_AUTHORIZATION];
     if (brokenFunctionLevelAuth) {
-      const brokenFunctionLevelAuthValidation = await validateSuccessCase(
-        app,
-        api,
-        brokenFunctionLevelAuth.rules,
-        tokens,
-        users
-      );
+      const brokenFunctionLevelAuthValidation =
+        await validateBrokenFunctionLevelAuthorization(
+          app,
+          api,
+          brokenFunctionLevelAuth.rules,
+          successFlow?.rules,
+          tokens,
+          users
+        );
 
       outputs.push({
         type: SecurityConfigType.BROKEN_FUNCTION_LEVEL_AUTHORIZATION,
         result: brokenFunctionLevelAuthValidation,
+      });
+    }
+
+    const unrestrictedResourceConsumption =
+      typeWiseMap[SecurityConfigType.UNRESTRICTED_RESOURCE_CONSUMPTION];
+    if (unrestrictedResourceConsumption) {
+      const unrestrictedResourceConsumptionValidation =
+        await validateUnrestrictedResourceConsumption(
+          app,
+          api,
+          unrestrictedResourceConsumption.rules,
+          successFlow?.rules,
+          tokens,
+          users
+        );
+
+      outputs.push({
+        type: SecurityConfigType.UNRESTRICTED_RESOURCE_CONSUMPTION,
+        result: unrestrictedResourceConsumptionValidation,
       });
     }
 
@@ -177,9 +200,9 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
       .map((output) => {
         // use emojis
         if (output.result.success) {
-          return `- ✅ [${output.type}]: ${output.result.message}`;
+          return `\t- ✅ [${output.type}]: ${output.result.message}`;
         } else {
-          return `- ❌ [${output.type}][${output.result.severity}] ${output.result.message}`;
+          return `\t- ❌ [${output.type}][${output.result.severity}] ${output.result.message}`;
         }
       })
       .join("\n");

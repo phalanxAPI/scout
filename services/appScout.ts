@@ -60,7 +60,7 @@ export const scoutApp = async (
     let outputSummary = `## Scanned APIs: \n\n`;
     outputSummary += apis
       .filter((item) => item.isVerified)
-      .map((api) => `- \`${api._id}\` => ${api.method}${api.endpoint}`)
+      .map((api) => `- \`${api._id}\` => ${api.method} ${api.endpoint}`)
       .join("\n");
 
     const scan = await Scan.create({
@@ -70,7 +70,7 @@ export const scoutApp = async (
     });
 
     try {
-      outputSummary += `\n\n\n##Results:`;
+      outputSummary += `\n\n\n## Results:`;
       await Promise.all(
         apis.map(async (api) => {
           const output = await scoutAPI(api, appData);
