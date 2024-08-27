@@ -23,11 +23,6 @@ export const validateSuccessCase = async (
     const params = populateData(ruleConfig.params, "", tokens, users);
     const body = populateData(ruleConfig.body, "", tokens, users);
 
-    console.log("URL: ", url);
-    console.log("Headers: ", headers);
-    console.log("Params: ", params);
-    console.log("Body: ", body);
-
     const response = await axios.request({
       method: api.method.toLowerCase(),
       url,
@@ -51,7 +46,7 @@ export const validateSuccessCase = async (
 
     return {
       success: true,
-      message: "Success case validated",
+      message: "Case validated successfully",
     };
   } catch (err) {
     console.error(err);
@@ -73,11 +68,6 @@ export const validateObjectLevelAuth = async (
     const headers = populateData(ruleConfig.headers, "", tokens, users);
     const params = populateData(ruleConfig.params, "", tokens, users);
     const body = populateData(ruleConfig.body, "", tokens, users);
-
-    console.log("URL: ", url);
-    console.log("Headers: ", headers);
-    console.log("Params: ", params);
-    console.log("Body: ", body);
 
     const response = await axios.request({
       method: api.method.toLowerCase(),
@@ -114,11 +104,61 @@ export const validateObjectLevelAuth = async (
 
     return {
       success: true,
-      message: "Success case validated",
+      message: "Case validated successfully",
     };
   } catch (err) {
     console.error(err);
 
-    throw new Error("Failed to validate success case");
+    throw new Error("Failed to validate broken object level auth case");
+  }
+};
+
+export const validateBrokenAuthentication = async (
+  app: ApplicationDoc,
+  api: APIDoc,
+  ruleConfig: SecurityConfigurationDoc["rules"],
+  successRuleConfig: SecurityConfigurationDoc["rules"]
+): Promise<ScanResult> => {
+  try {
+    const url = app.baseUrl + api.endpoint;
+
+    const response = await axios.request({
+      method: api.method.toLowerCase(),
+      url,
+      validateStatus: () => true,
+    });
+
+    // verify expectations
+    const expectedCode = ruleConfig.expectations.code;
+    const expectedSuccessCode = successRuleConfig?.expectations?.code;
+    const responseCode = response.status;
+
+    if (expectedCode !== responseCode) {
+      if (
+        responseCode === expectedSuccessCode ||
+        Math.floor(responseCode / 100) === 2
+      ) {
+        return {
+          success: false,
+          message: `Expected status code ${expectedCode}, got ${responseCode}`,
+          severity: "HIGH",
+        };
+      } else {
+        return {
+          success: false,
+          message: `Expected status code ${expectedCode}, got ${responseCode}`,
+          severity: "LOW",
+        };
+      }
+    }
+
+    return {
+      success: true,
+      message: "Case validated successfully",
+    };
+  } catch (err) {
+    console.error(err);
+
+    throw new Error("Failed to validate broken authentication case");
   }
 };

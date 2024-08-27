@@ -6,6 +6,7 @@ import { fetchTokens } from "./tokens";
 import { fetchUsersData } from "./users";
 import {
   ScanResult,
+  validateBrokenAuthentication,
   validateObjectLevelAuth,
   validateSuccessCase,
 } from "./validations";
@@ -53,6 +54,22 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
     //   },
     // });
 
+    // // Broken Authentication Case
+    // return await SecurityConfiguration.create({
+    //   apiId: api,
+    //   configType: SecurityConfigType.BROKEN_AUTHENTICATION,
+    //   isEnabled: true,
+    //   rules: {
+    //     headers: {},
+    //     params: {
+    //       userId: "{{user1.id}}",
+    //     },
+    //     expectations: {
+    //       code: 401,
+    //     },
+    //   },
+    // });
+
     const apiRules = await SecurityConfiguration.find({ apiId: api });
     const typeWiseMap = apiRules.reduce((acc, rule) => {
       acc[rule.configType] = rule;
@@ -95,6 +112,22 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
       outputs.push({
         type: SecurityConfigType.BROKEN_OBJECT_LEVEL_AUTH,
         result: brokenObjectLevelAuthValidation,
+      });
+    }
+
+    const brokenAuthentication =
+      typeWiseMap[SecurityConfigType.BROKEN_AUTHENTICATION];
+    if (brokenAuthentication) {
+      const brokenAuthenticationValidation = await validateBrokenAuthentication(
+        app,
+        api,
+        brokenAuthentication.rules,
+        successFlow?.rules
+      );
+
+      outputs.push({
+        type: SecurityConfigType.BROKEN_AUTHENTICATION,
+        result: brokenAuthenticationValidation,
       });
     }
 
