@@ -7,7 +7,7 @@ import { populateData } from "./population";
 export const fetchTokens = async (app: ApplicationDoc) => {
   try {
     const tokensConfig = await SecurityConfiguration.findOne({
-      apiId: app,
+      app,
       configType: SecurityConfigType.AUTH_TOKENS,
     });
 
@@ -27,5 +27,6 @@ export const fetchTokens = async (app: ApplicationDoc) => {
     return data;
   } catch (err) {
     console.error(err);
+    throw new Error("Failed to fetch tokens");
   }
 };
