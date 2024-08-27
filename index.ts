@@ -1,13 +1,7 @@
+import { initDB } from "./core/db";
 import initServer from "./core/server";
-import { ScoutService } from "./types/proto";
+import { services } from "./core/services";
 
-const services: ScoutService = {
-  scanApp: async (data) => {
-    // TODO: Test Servers
-    return {
-      scanId: "Scanning app",
-    };
-  },
-};
-
-initServer(services);
+initDB().then(() => {
+  initServer(services);
+});
