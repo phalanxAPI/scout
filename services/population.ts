@@ -1,20 +1,8 @@
-interface UserData {
-  [key: string]: {
-    firstName: string;
-    lastName: string;
-    [key: string]: any;
-  };
-}
-
-interface TokenData {
-  [key: string]: string;
-}
-
 export const populateData = (
   data: any,
   sharedSecret: string,
-  tokenData: TokenData,
-  userData: UserData
+  tokenData: Record<string, any>,
+  userData: Record<string, any>
 ): any => {
   if (typeof data === "object" && data !== null) {
     if (Array.isArray(data)) {
