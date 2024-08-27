@@ -9,6 +9,7 @@ export const scoutApp = async (
   data: ScanAppRequest
 ): Promise<ScanAppResponse> => {
   const appId = data.appId;
+  let scanId = "";
 
   try {
     const appData = await Application.findById(appId);
@@ -30,7 +31,7 @@ export const scoutApp = async (
     });
 
     try {
-      outputSummary += `\n\n\n##Results: \n\n`;
+      outputSummary += `\n\n\n##Results:`;
       await Promise.all(
         apis.map(async (api) => {
           const output = await scoutAPI(api, appData);
@@ -43,9 +44,22 @@ export const scoutApp = async (
       throw new Error("Scout break time");
     }
 
+    await Scan.updateOne(
+      { _id: scan._id },
+      { outputSummary, status: "COMPLETED" }
+    );
+
     return { scanId: scan._id.toString() };
   } catch (err) {
     console.error(err);
+
+    if (scanId) {
+      try {
+        await Scan.updateOne({ _id: scanId }, { status: "FAILED" });
+      } catch (err) {
+        console.error(err);
+      }
+    }
     throw new Error("Scout RIP");
   }
 };
