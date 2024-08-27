@@ -227,3 +227,61 @@ export const validateBrokenObjectPropertyLevelAuthorization = async (
     );
   }
 };
+
+export const validateBrokenFunctionLevelAuthorization = async (
+  app: ApplicationDoc,
+  api: APIDoc,
+  ruleConfig: SecurityConfigurationDoc["rules"],
+  successRuleConfig: SecurityConfigurationDoc["rules"],
+  tokens: Record<string, string>,
+  users: Record<string, any>
+): Promise<ScanResult> => {
+  try {
+    const url = app.baseUrl + api.endpoint;
+    const headers = populateData(ruleConfig.headers, "", tokens, users);
+    const params = populateData(ruleConfig.params, "", tokens, users);
+    const body = populateData(ruleConfig.body, "", tokens, users);
+
+    const response = await axios.request({
+      method: api.method.toLowerCase(),
+      url,
+      headers,
+      params,
+      data: body,
+      validateStatus: () => true,
+    });
+
+    // verify expectations
+    const expectedCode = ruleConfig.expectations.code;
+    const expectedSuccessCode = successRuleConfig?.expectations?.code;
+    const responseCode = response.status;
+
+    if (expectedCode !== responseCode) {
+      if (
+        responseCode === expectedSuccessCode ||
+        Math.floor(responseCode / 100) === 2
+      ) {
+        return {
+          success: false,
+          message: `Expected status code ${expectedCode}, got ${responseCode}`,
+          severity: "HIGH",
+        };
+      } else {
+        return {
+          success: false,
+          message: `Expected status code ${expectedCode}, got ${responseCode}`,
+          severity: "LOW",
+        };
+      }
+    }
+
+    return {
+      success: true,
+      message: "Case validated successfully",
+    };
+  } catch (err) {
+    console.error(err);
+
+    throw new Error("Failed to validate broken function level auth case");
+  }
+};

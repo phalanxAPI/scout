@@ -21,8 +21,8 @@ export const scoutApp = async (
 
     // const apiData = await API.create({
     //   appId,
-    //   endpoint: "/api/v1/test",
-    //   method: "PUT",
+    //   endpoint: "/api/v1/test/internal-info",
+    //   method: "GET",
     //   isVerified: true,
     //   isDeprecated: false,
     // });
@@ -35,12 +35,6 @@ export const scoutApp = async (
     //     headers: {
     //       Authorization: `Bearer {{admin.token}}`,
     //     },
-    //     body: {
-    //       id: "admin",
-    //       firstName: "Admin",
-    //       lastName: "User",
-    //       isAdmin: true,
-    //     },
     //     expectations: {
     //       code: 200,
     //     },
@@ -49,17 +43,11 @@ export const scoutApp = async (
 
     // await SecurityConfiguration.create({
     //   apiId: apiData,
-    //   configType: SecurityConfigType.BROKEN_OBJECT_PROPERTY_LEVEL_AUTHORIZATION,
+    //   configType: SecurityConfigType.BROKEN_FUNCTION_LEVEL_AUTHORIZATION,
     //   isEnabled: true,
     //   rules: {
     //     headers: {
     //       Authorization: `Bearer {{user1.token}}`,
-    //     },
-    //     body: {
-    //       id: "user1",
-    //       firstName: "User",
-    //       lastName: "One",
-    //       isAdmin: true,
     //     },
     //     expectations: {
     //       code: 403,

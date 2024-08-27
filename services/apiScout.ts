@@ -153,6 +153,23 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
       });
     }
 
+    const brokenFunctionLevelAuth =
+      typeWiseMap[SecurityConfigType.BROKEN_FUNCTION_LEVEL_AUTHORIZATION];
+    if (brokenFunctionLevelAuth) {
+      const brokenFunctionLevelAuthValidation = await validateSuccessCase(
+        app,
+        api,
+        brokenFunctionLevelAuth.rules,
+        tokens,
+        users
+      );
+
+      outputs.push({
+        type: SecurityConfigType.BROKEN_FUNCTION_LEVEL_AUTHORIZATION,
+        result: brokenFunctionLevelAuthValidation,
+      });
+    }
+
     // Merge outputs into markdown
     const outputSummary = outputs
       .map((output) => {
