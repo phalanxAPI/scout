@@ -1,7 +1,15 @@
+import mongoose from "mongoose";
 import API from "../arsenal/models/api";
 import Application from "../arsenal/models/application";
+import Scan from "../arsenal/models/scan";
+import { ScanAppRequest, ScanAppResponse } from "../types/proto";
+import { scoutAPI } from "./apiScout";
 
-export const scoutApp = async (appId: string): Promise<any> => {
+export const scoutApp = async (
+  data: ScanAppRequest
+): Promise<ScanAppResponse> => {
+  const appId = data.appId;
+
   try {
     const appData = await Application.findById(appId);
     if (!appData) {
@@ -9,9 +17,35 @@ export const scoutApp = async (appId: string): Promise<any> => {
     }
 
     const apis = await API.find({ appId });
-    return apis;
+
+    let outputSummary = `## Scanned APIs: \n\n`;
+    outputSummary += apis
+      .map((api) => `- \`${api._id}\` => ${api.method}${api.endpoint}`)
+      .join("\n");
+
+    const scan = await Scan.create({
+      appId: new mongoose.Types.ObjectId(appId),
+      scanDate: new Date(),
+      outputSummary,
+    });
+
+    try {
+      outputSummary += `\n\n\n##Results: \n\n`;
+      await Promise.all(
+        apis.map(async (api) => {
+          const output = await scoutAPI(api, appData);
+
+          outputSummary += `\n\n- API: \`${api._id}\`\n${output}`;
+        })
+      );
+    } catch (err) {
+      console.error(err);
+      throw new Error("Scout break time");
+    }
+
+    return { scanId: scan._id.toString() };
   } catch (err) {
     console.error(err);
-    throw new Error("Failed to scan app");
+    throw new Error("Scout RIP");
   }
 };
