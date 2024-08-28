@@ -1,5 +1,6 @@
 import { APIDoc } from "../arsenal/models/api";
 import { ApplicationDoc } from "../arsenal/models/application";
+import Issue from "../arsenal/models/issue";
 import SecurityConfiguration from "../arsenal/models/security-conf";
 import { SecurityConfigType } from "../arsenal/types/security-conf";
 import { fetchTokens } from "./tokens";
@@ -205,16 +206,26 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
     }
 
     // Merge outputs into markdown
-    const outputSummary = outputs
-      .map((output) => {
-        // use emojis
-        if (output.result.success) {
-          return `\t- ✅ [${output.type}]: ${output.result.message}`;
-        } else {
-          return `\t- ❌ [${output.type}][${output.result.severity}] ${output.result.message}`;
-        }
-      })
-      .join("\n");
+    const outputSummary = (
+      await Promise.all(
+        outputs.map(async (output) => {
+          // use emojis
+          if (output.result.success) {
+            return `\t- ✅ [${output.type}]: ${output.result.message}`;
+          } else {
+            // create issue
+            await Issue.create({
+              apiId: api._id,
+              appId: app._id,
+              title: output.type,
+              description: output.result.message,
+              severity: output.result.severity,
+            });
+            return `\t- ❌ [${output.type}][${output.result.severity}] ${output.result.message}`;
+          }
+        })
+      )
+    ).join("\n");
 
     return outputSummary;
   } catch (err) {
