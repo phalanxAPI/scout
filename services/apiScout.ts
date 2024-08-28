@@ -177,25 +177,6 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
       });
     }
 
-    const unrestrictedResourceConsumption =
-      typeWiseMap[SecurityConfigType.UNRESTRICTED_RESOURCE_CONSUMPTION];
-    if (unrestrictedResourceConsumption) {
-      const unrestrictedResourceConsumptionValidation =
-        await validateUnrestrictedResourceConsumption(
-          app,
-          api,
-          unrestrictedResourceConsumption.rules,
-          successFlow?.rules,
-          tokens,
-          users
-        );
-
-      outputs.push({
-        type: SecurityConfigType.UNRESTRICTED_RESOURCE_CONSUMPTION,
-        result: unrestrictedResourceConsumptionValidation,
-      });
-    }
-
     const unrestrictedAccessToSensitiveBusinessFlow =
       typeWiseMap[
         SecurityConfigType.UNRESTRICTED_ACCESS_TO_SENSITIVE_BUSINESS_FLOW
@@ -214,6 +195,25 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
       outputs.push({
         type: SecurityConfigType.UNRESTRICTED_ACCESS_TO_SENSITIVE_BUSINESS_FLOW,
         result: unrestrictedAccessToSensitiveBusinessFlowValidation,
+      });
+    }
+
+    const unrestrictedResourceConsumption =
+      typeWiseMap[SecurityConfigType.UNRESTRICTED_RESOURCE_CONSUMPTION];
+    if (unrestrictedResourceConsumption) {
+      const unrestrictedResourceConsumptionValidation =
+        await validateUnrestrictedResourceConsumption(
+          app,
+          api,
+          unrestrictedResourceConsumption.rules,
+          successFlow?.rules,
+          tokens,
+          users
+        );
+
+      outputs.push({
+        type: SecurityConfigType.UNRESTRICTED_RESOURCE_CONSUMPTION,
+        result: unrestrictedResourceConsumptionValidation,
       });
     }
 
