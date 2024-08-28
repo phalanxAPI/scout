@@ -10,6 +10,7 @@ import {
   validateBrokenFunctionLevelAuthorization,
   validateBrokenObjectPropertyLevelAuthorization,
   validateObjectLevelAuth,
+  validateSecurityMisconfiguration,
   validateSuccessCase,
   validateUnrestrictedAccessToSensitiveBusinessFlow,
   validateUnrestrictedResourceConsumption,
@@ -72,6 +73,14 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
     //       code: 401,
     //     },
     //   },
+    // });
+
+    // // Security Misconfiguration
+    // await SecurityConfiguration.create({
+    //   apiId: api,
+    //   configType: SecurityConfigType.SECURITY_MISCONFIGURATION,
+    //   isEnabled: true,
+    //   rules: {},
     // });
 
     const apiRules = await SecurityConfiguration.find({ apiId: api });
@@ -195,6 +204,24 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
       outputs.push({
         type: SecurityConfigType.UNRESTRICTED_ACCESS_TO_SENSITIVE_BUSINESS_FLOW,
         result: unrestrictedAccessToSensitiveBusinessFlowValidation,
+      });
+    }
+
+    const securityMisconfiguration =
+      typeWiseMap[SecurityConfigType.SECURITY_MISCONFIGURATION];
+    if (securityMisconfiguration) {
+      const securityMisconfigurationValidation =
+        await validateSecurityMisconfiguration(
+          app,
+          api,
+          successFlow?.rules,
+          tokens,
+          users
+        );
+
+      outputs.push({
+        type: SecurityConfigType.SECURITY_MISCONFIGURATION,
+        result: securityMisconfigurationValidation,
       });
     }
 
