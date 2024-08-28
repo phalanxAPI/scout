@@ -420,3 +420,78 @@ export const validateUnrestrictedResourceConsumption = async (
     );
   }
 };
+
+export const validateUnrestrictedAccessToSensitiveBusinessFlow = async (
+  app: ApplicationDoc,
+  api: APIDoc,
+  ruleConfig: SecurityConfigurationDoc["rules"],
+  successRuleConfig: SecurityConfigurationDoc["rules"],
+  tokens: Record<string, string>,
+  users: Record<string, any>
+): Promise<ScanResult> => {
+  try {
+    // Limit of requests that can be made with same payload
+    let limit = ruleConfig.limit;
+
+    const url = app.baseUrl + api.endpoint;
+    const headers = populateData(successRuleConfig.headers, "", tokens, users);
+    const params = populateData(successRuleConfig.params, "", tokens, users);
+    const body = populateData(successRuleConfig.body, "", tokens, users);
+
+    for (let i = 0; i <= limit; i++) {
+      const response = await axios.request({
+        method: api.method.toLowerCase(),
+        url,
+        headers,
+        params,
+        data: body,
+        validateStatus: () => true,
+      });
+
+      // verify expectations
+      const expectedSuccessCode = successRuleConfig?.expectations?.code;
+      const responseCode = response.status;
+
+      if (i === limit) {
+        const expectedCode = ruleConfig.expectations.code;
+        if (expectedCode !== responseCode) {
+          if (
+            responseCode === expectedSuccessCode ||
+            Math.floor(responseCode / 100) === 2
+          ) {
+            return {
+              success: false,
+              message: `Expected status code ${expectedCode}, got ${responseCode}`,
+              severity: "HIGH",
+            };
+          } else {
+            return {
+              success: false,
+              message: `Expected status code ${expectedCode}, got ${responseCode}`,
+              severity: "LOW",
+            };
+          }
+        }
+      } else {
+        if (responseCode !== expectedSuccessCode) {
+          return {
+            success: false,
+            message: `Expected status code ${expectedSuccessCode}, got ${responseCode}`,
+            severity: "HIGH",
+          };
+        }
+      }
+    }
+
+    return {
+      success: true,
+      message: "Case validated successfully",
+    };
+  } catch (err) {
+    console.error(err);
+
+    throw new Error(
+      "Failed to validate unrestricted access to sensitive business flow case"
+    );
+  }
+};

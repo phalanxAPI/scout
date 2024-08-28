@@ -21,8 +21,8 @@ export const scoutApp = async (
 
     // const apiData = await API.create({
     //   appId,
-    //   endpoint: "/api/v1/test/public",
-    //   method: "GET",
+    //   endpoint: "/api/v1/test/purchase",
+    //   method: "POST",
     //   isVerified: true,
     //   isDeprecated: false,
     // });
@@ -32,6 +32,9 @@ export const scoutApp = async (
     //   configType: SecurityConfigType.SUCCESS_FLOW,
     //   isEnabled: true,
     //   rules: {
+    //     body: {
+    //       orderId: "{{regex:^[0-9]{10}$}}",
+    //     },
     //     expectations: {
     //       code: 200,
     //     },
@@ -40,17 +43,13 @@ export const scoutApp = async (
 
     // await SecurityConfiguration.create({
     //   apiId: apiData,
-    //   configType: SecurityConfigType.UNRESTRICTED_RESOURCE_CONSUMPTION,
+    //   configType:
+    //     SecurityConfigType.UNRESTRICTED_ACCESS_TO_SENSITIVE_BUSINESS_FLOW,
     //   isEnabled: true,
     //   rules: {
-    //     limits: {
-    //       payload: 2 * 1024 * 1024, // 2MB
-    //       rate: 10, // 10 requests
-    //       rateWindow: 60, // 60 seconds
-    //     },
+    //     limit: 1,
     //     expectations: {
-    //       rateLimit: 429,
-    //       sizeLimit: 413,
+    //       code: 403,
     //     },
     //   },
     // });

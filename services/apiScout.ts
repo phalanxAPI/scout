@@ -11,6 +11,7 @@ import {
   validateBrokenObjectPropertyLevelAuthorization,
   validateObjectLevelAuth,
   validateSuccessCase,
+  validateUnrestrictedAccessToSensitiveBusinessFlow,
   validateUnrestrictedResourceConsumption,
 } from "./validations";
 
@@ -192,6 +193,27 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
       outputs.push({
         type: SecurityConfigType.UNRESTRICTED_RESOURCE_CONSUMPTION,
         result: unrestrictedResourceConsumptionValidation,
+      });
+    }
+
+    const unrestrictedAccessToSensitiveBusinessFlow =
+      typeWiseMap[
+        SecurityConfigType.UNRESTRICTED_ACCESS_TO_SENSITIVE_BUSINESS_FLOW
+      ];
+    if (unrestrictedAccessToSensitiveBusinessFlow) {
+      const unrestrictedAccessToSensitiveBusinessFlowValidation =
+        await validateUnrestrictedAccessToSensitiveBusinessFlow(
+          app,
+          api,
+          unrestrictedAccessToSensitiveBusinessFlow.rules,
+          successFlow?.rules,
+          tokens,
+          users
+        );
+
+      outputs.push({
+        type: SecurityConfigType.UNRESTRICTED_ACCESS_TO_SENSITIVE_BUSINESS_FLOW,
+        result: unrestrictedAccessToSensitiveBusinessFlowValidation,
       });
     }
 
