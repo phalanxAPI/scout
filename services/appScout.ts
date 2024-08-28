@@ -21,8 +21,8 @@ export const scoutApp = async (
 
     // const apiData = await API.create({
     //   appId,
-    //   endpoint: "/api/v1/test/purchase",
-    //   method: "POST",
+    //   endpoint: "/api/v1/test/render-avatar",
+    //   method: "GET",
     //   isVerified: true,
     //   isDeprecated: false,
     // });
@@ -32,8 +32,8 @@ export const scoutApp = async (
     //   configType: SecurityConfigType.SUCCESS_FLOW,
     //   isEnabled: true,
     //   rules: {
-    //     body: {
-    //       orderId: "{{regex:^[0-9]{10}$}}",
+    //     params: {
+    //       url: "https://api.dicebear.com/8.x/adventurer/svg?seed={{regex:[a-z0-9]{10}}}",
     //     },
     //     expectations: {
     //       code: 200,
@@ -43,13 +43,14 @@ export const scoutApp = async (
 
     // await SecurityConfiguration.create({
     //   apiId: apiData,
-    //   configType:
-    //     SecurityConfigType.UNRESTRICTED_ACCESS_TO_SENSITIVE_BUSINESS_FLOW,
+    //   configType: SecurityConfigType.SERVER_SIDE_REQUEST_FORGERY,
     //   isEnabled: true,
     //   rules: {
-    //     limit: 1,
+    //     params: {
+    //       url: "https://{{regex:[a-z0-9]{10}}}.api.dicebear.com/8.x/adventurer/svg?seed=123",
+    //     },
     //     expectations: {
-    //       code: 403,
+    //       code: 400,
     //     },
     //   },
     // });

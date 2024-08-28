@@ -11,6 +11,7 @@ import {
   validateBrokenObjectPropertyLevelAuthorization,
   validateObjectLevelAuth,
   validateSecurityMisconfiguration,
+  validateServerSideRequestForgery,
   validateSuccessCase,
   validateUnrestrictedAccessToSensitiveBusinessFlow,
   validateUnrestrictedResourceConsumption,
@@ -204,6 +205,25 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
       outputs.push({
         type: SecurityConfigType.UNRESTRICTED_ACCESS_TO_SENSITIVE_BUSINESS_FLOW,
         result: unrestrictedAccessToSensitiveBusinessFlowValidation,
+      });
+    }
+
+    const serverSideRequestForgery =
+      typeWiseMap[SecurityConfigType.SERVER_SIDE_REQUEST_FORGERY];
+    if (serverSideRequestForgery) {
+      const serverSideRequestForgeryValidation =
+        await validateServerSideRequestForgery(
+          app,
+          api,
+          serverSideRequestForgery.rules,
+          successFlow?.rules,
+          tokens,
+          users
+        );
+
+      outputs.push({
+        type: SecurityConfigType.SERVER_SIDE_REQUEST_FORGERY,
+        result: serverSideRequestForgeryValidation,
       });
     }
 
