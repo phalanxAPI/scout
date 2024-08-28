@@ -24,66 +24,6 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
       fetchUsersData(app),
     ]);
 
-    // // TMP Create success flow
-    // await SecurityConfiguration.create({
-    //   apiId: api,
-    //   configType: SecurityConfigType.SUCCESS_FLOW,
-    //   isEnabled: true,
-    //   rules: {
-    //     headers: {
-    //       Authorization: `Bearer {{user1.token}}`,
-    //     },
-    //     params: {
-    //       userId: "{{user1.id}}",
-    //     },
-    //     expectations: {
-    //       code: 200,
-    //     },
-    //   },
-    // });
-
-    // // Create failure flow with Broken Object Level Authorization
-    // await SecurityConfiguration.create({
-    //   apiId: api,
-    //   configType: SecurityConfigType.BROKEN_OBJECT_LEVEL_AUTH,
-    //   isEnabled: true,
-    //   rules: {
-    //     headers: {
-    //       Authorization: `Bearer {{user2.token}}`,
-    //     },
-    //     params: {
-    //       userId: "{{user1.id}}",
-    //     },
-    //     expectations: {
-    //       code: 403,
-    //     },
-    //   },
-    // });
-
-    // // Broken Authentication Case
-    // return await SecurityConfiguration.create({
-    //   apiId: api,
-    //   configType: SecurityConfigType.BROKEN_AUTHENTICATION,
-    //   isEnabled: true,
-    //   rules: {
-    //     headers: {},
-    //     params: {
-    //       userId: "{{user1.id}}",
-    //     },
-    //     expectations: {
-    //       code: 401,
-    //     },
-    //   },
-    // });
-
-    // // Security Misconfiguration
-    // await SecurityConfiguration.create({
-    //   apiId: api,
-    //   configType: SecurityConfigType.SECURITY_MISCONFIGURATION,
-    //   isEnabled: true,
-    //   rules: {},
-    // });
-
     const apiRules = await SecurityConfiguration.find({ apiId: api });
     const typeWiseMap = apiRules.reduce((acc, rule) => {
       acc[rule.configType] = rule;

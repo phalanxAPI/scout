@@ -4,8 +4,6 @@ import Application from "../arsenal/models/application";
 import Scan from "../arsenal/models/scan";
 import { ScanAppRequest, ScanAppResponse } from "../types/proto";
 import { scoutAPI } from "./apiScout";
-import SecurityConfiguration from "../arsenal/models/security-conf";
-import { SecurityConfigType } from "../arsenal/types/security-conf";
 
 export const scoutApp = async (
   data: ScanAppRequest
@@ -18,42 +16,6 @@ export const scoutApp = async (
     if (!appData) {
       throw new Error("Application not found");
     }
-
-    // const apiData = await API.create({
-    //   appId,
-    //   endpoint: "/api/v1/test/render-avatar",
-    //   method: "GET",
-    //   isVerified: true,
-    //   isDeprecated: false,
-    // });
-
-    // await SecurityConfiguration.create({
-    //   apiId: apiData,
-    //   configType: SecurityConfigType.SUCCESS_FLOW,
-    //   isEnabled: true,
-    //   rules: {
-    //     params: {
-    //       url: "https://api.dicebear.com/8.x/adventurer/svg?seed={{regex:[a-z0-9]{10}}}",
-    //     },
-    //     expectations: {
-    //       code: 200,
-    //     },
-    //   },
-    // });
-
-    // await SecurityConfiguration.create({
-    //   apiId: apiData,
-    //   configType: SecurityConfigType.SERVER_SIDE_REQUEST_FORGERY,
-    //   isEnabled: true,
-    //   rules: {
-    //     params: {
-    //       url: "https://{{regex:[a-z0-9]{10}}}.api.dicebear.com/8.x/adventurer/svg?seed=123",
-    //     },
-    //     expectations: {
-    //       code: 400,
-    //     },
-    //   },
-    // });
 
     const apis = await API.find({ appId });
 
