@@ -3,7 +3,7 @@ import API from "../arsenal/models/api";
 import Application from "../arsenal/models/application";
 import Scan from "../arsenal/models/scan";
 import { ScanAppRequest, ScanAppResponse } from "../types/proto";
-import { scoutAPI } from "./apiScout";
+import { scoutAPI } from "./api-scout";
 
 export const scoutApp = async (
   data: ScanAppRequest
