@@ -4,6 +4,7 @@ import Application from "../arsenal/models/application";
 import Scan from "../arsenal/models/scan";
 import { ScanAppRequest, ScanAppResponse } from "../types/proto";
 import { scoutAPI } from "./api-scout";
+import cron from "node-cron";
 
 export const scoutApp = async (
   data: ScanAppRequest
@@ -63,4 +64,25 @@ export const scoutApp = async (
     }
     throw new Error("Scout RIP");
   }
+};
+
+export const autoScout = () => {
+  const task = async () => {
+    try {
+      const allApps = await Application.find();
+      for (const app of allApps) {
+        try {
+          await scoutApp({ appId: app._id.toString() });
+          console.log("SUCCESSFULLY SCOUTED APP", app._id);
+        } catch (err) {
+          console.error("ERROR SCOUTING APP", app._id, err);
+        }
+      }
+      console.log("SUCCESSFULLY SCOUTED ALL APPS");
+    } catch (err) {
+      console.error("ERROR SCOUTING APPS", err);
+    }
+  };
+
+  cron.schedule("*/30 * * * *", task);
 };
