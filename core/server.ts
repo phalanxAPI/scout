@@ -5,15 +5,14 @@ import { ScoutService } from "../types/proto";
 
 const PORT = process.env.PORT || 9001;
 
-// const packageDef = loadSync("arsenal/proto/scout.proto", {});
-const packageDef = loadSync("arsenal/proto/sysmon.lighthouse.proto", {});
+const packageDef = loadSync("arsenal/proto/scout.proto", {});
 const gRPCObject = gRPC.loadPackageDefinition(packageDef);
 
 const phalanxPackage = gRPCObject.phalanx as GrpcObject;
 const arsenalPackage = phalanxPackage.arsenal as GrpcObject;
-const scoutPackage = arsenalPackage.sysmon as GrpcObject;
+const scoutPackage = arsenalPackage.scout as GrpcObject;
 
-const scoutConstructor = scoutPackage.SysmonService as ServiceClientConstructor;
+const scoutConstructor = scoutPackage.ScoutService as ServiceClientConstructor;
 const scoutService = scoutConstructor.service;
 
 const server = new gRPC.Server();
