@@ -35,11 +35,13 @@ export const scoutApp = async (
     try {
       outputSummary += `\n\n\n## Results:`;
       await Promise.all(
-        apis.map(async (api) => {
-          const output = await scoutAPI(api, appData);
+        apis
+          .filter((item) => item.isVerified)
+          .map(async (api) => {
+            const output = await scoutAPI(api, appData);
 
-          outputSummary += `\n\n- API: \`${api._id}\`\n${output}`;
-        })
+            outputSummary += `\n\n- API: \`${api._id}\`\n${output}`;
+          })
       );
     } catch (err) {
       console.error(err);

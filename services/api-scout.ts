@@ -2,7 +2,10 @@ import { APIDoc } from "../arsenal/models/api";
 import { ApplicationDoc } from "../arsenal/models/application";
 import Issue from "../arsenal/models/issue";
 import SecurityConfiguration from "../arsenal/models/security-conf";
+import User from "../arsenal/models/user";
 import { SecurityConfigType } from "../arsenal/types/security-conf";
+import { UserRole } from "../arsenal/types/user";
+import { sendEmail } from "./mailer";
 import { fetchTokens } from "./tokens";
 import { fetchUsersData } from "./users";
 import {
@@ -25,7 +28,10 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
       fetchUsersData(app),
     ]);
 
-    const apiRules = await SecurityConfiguration.find({ apiId: api });
+    const apiRules = await SecurityConfiguration.find({
+      apiId: api,
+      isEnabled: true,
+    });
     const typeWiseMap = apiRules.reduce((acc, rule) => {
       acc[rule.configType] = rule;
       return acc;
@@ -214,13 +220,27 @@ export const scoutAPI = async (api: APIDoc, app: ApplicationDoc) => {
             return `\t- ✅ [${output.type}]: ${output.result.message}`;
           } else {
             // create issue
-            await Issue.create({
+            const issue = await Issue.create({
               apiId: api._id,
               appId: app._id,
               title: output.type,
               description: output.result.message,
               severity: output.result.severity,
             });
+
+            const admin = await User.findOne({ role: UserRole.ADMIN }).lean();
+            const receiverMail = admin.email;
+            const receiverName = `${admin.firstName} ${admin.lastName}`;
+            const issueLink = `${process.env.PHALANX_BASE_URL}/issues/${issue._id}`;
+            const subject = `${output.result.severity} Vulnerability Detected in ${app.name} API`;
+            const message = `Hello ${receiverName},\n\nA ${output.result.severity} vulnerability has been detected in the ${app.name} API. Please check the issue at ${issueLink}.\n\nRegards,\nAPI Arsenal`;
+
+            sendEmail({
+              subject: subject,
+              body: message,
+              to: receiverMail,
+            });
+
             return `\t- ❌ [${output.type}][${output.result.severity}] ${output.result.message}`;
           }
         })

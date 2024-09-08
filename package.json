@@ -13,6 +13,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "@azure/communication-email": "^1.0.0",
     "@grpc/grpc-js": "^1.11.1",
     "@grpc/proto-loader": "^0.7.13",
     "@supabase/supabase-js": "^2.45.2",
