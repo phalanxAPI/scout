@@ -1,4 +1,5 @@
 import RandExp from "randexp";
+import { isEmpty } from "../utils";
 
 type TokenData = Record<string, string>;
 type UserData = Record<string, Record<string, any>>;
@@ -9,6 +10,9 @@ const populateData = (
   tokenData: TokenData,
   userData: UserData
 ): any => {
+  if (isEmpty(data)) {
+    return undefined;
+  }
   // Merge token data into user data
   for (const key in tokenData) {
     if (userData.hasOwnProperty(key)) {
