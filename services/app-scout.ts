@@ -18,7 +18,11 @@ export const scoutApp = async (
       throw new Error("Application not found");
     }
 
-    const apis = await API.find({ appId });
+    const apis = await API.find({
+      appId,
+      isVerified: true,
+      isDeprecated: false,
+    });
 
     let outputSummary = `## Scanned APIs: \n\n`;
     outputSummary += apis
